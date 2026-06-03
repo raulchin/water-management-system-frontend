@@ -4,13 +4,19 @@ export type LoginInput = {
 }
 
 export type AuthUser = {
-  id: string
-  name: string
-  email: string
-  role: 'admin' | 'operador' | 'socio'
+  id?: string
+  name?: string
+  email?: string
+  role?: 'admin' | 'operador' | 'socio'
 }
 
 export type AuthResponse = {
-  token: string
-  user: AuthUser
+  accessToken: string
+  tokenType: string
+  expiresInMinutes: number
+  idUsuario: number
+  username: string
+  email: string
+  nombres: string
+  roles: string[]
 }

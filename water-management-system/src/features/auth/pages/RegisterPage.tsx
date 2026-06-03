@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { UserPlus } from 'lucide-react'
+import { UserPlus, ChevronDown } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
@@ -10,6 +10,7 @@ const registerSchema = z.object({
   email: z.string().min(1, 'El correo es obligatorio').email('Ingresa un correo valido'),
   phone: z.string().min(1, 'El telefono es obligatorio'),
   password: z.string().min(6, 'La contrasena debe tener al menos 6 caracteres'),
+  rol: z.string().min(6, 'seleccione un rol'),
   acceptTerms: z.boolean(),
 }).refine((data) => data.acceptTerms, {
   message: 'Debes aceptar los terminos y condiciones',
@@ -17,6 +18,9 @@ const registerSchema = z.object({
 })
 
 type RegisterFormData = z.infer<typeof registerSchema>
+
+const inputClass =
+  'h-12 w-full rounded-lg border border-slate-300 bg-white px-4 pr-11 text-slate-700 shadow-sm placeholder:text-slate-400 focus:border-[#5b35d5] focus:outline-none focus:ring-2 focus:ring-[#d8ccff]';
 
 export function RegisterPage() {
   const navigate = useNavigate()
@@ -32,6 +36,7 @@ export function RegisterPage() {
       email: '',
       phone: '',
       password: '',
+      rol: '',
       acceptTerms: false,
     },
   })
@@ -64,7 +69,7 @@ export function RegisterPage() {
                 <div>
                   <input
                     type="text"
-                    placeholder="Your first name"
+                    placeholder="Ingrese Usuario"
                     className="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-5 text-slate-700 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     {...register('firstName')}
                   />
@@ -73,7 +78,7 @@ export function RegisterPage() {
                 <div>
                   <input
                     type="text"
-                    placeholder="Your last name"
+                    placeholder="Ingrese sus nombres"
                     className="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-5 text-slate-700 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                     {...register('lastName')}
                   />
@@ -84,21 +89,11 @@ export function RegisterPage() {
               <div>
                 <input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Ingrese correo electronico"
                   className="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-5 text-slate-700 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   {...register('email')}
                 />
                 {errors.email ? <p className="mt-1 text-xs text-red-600">{errors.email.message}</p> : null}
-              </div>
-
-              <div>
-                <input
-                  type="tel"
-                  placeholder="Enter your phone"
-                  className="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-5 text-slate-700 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                  {...register('phone')}
-                />
-                {errors.phone ? <p className="mt-1 text-xs text-red-600">{errors.phone.message}</p> : null}
               </div>
 
               <div>
@@ -110,6 +105,15 @@ export function RegisterPage() {
                 />
                 {errors.password ? <p className="mt-1 text-xs text-red-600">{errors.password.message}</p> : null}
               </div>
+              
+              <div className="relative">
+              <select id="rol"  className={`${inputClass} appearance-none`} {...register('rol')}>
+                <option value="">Seleccione el tipo de socio</option>
+                <option value="admin">Admin</option>
+                <option value="user">Usuario</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500" size={21} />
+            </div>
 
               <label className="flex items-center gap-3 text-sm text-slate-600">
                 <input type="checkbox" className="h-4 w-4 rounded border-slate-400 text-indigo-700 focus:ring-indigo-400" {...register('acceptTerms')} />
