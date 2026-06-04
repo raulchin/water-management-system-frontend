@@ -1,6 +1,6 @@
 
 import { apiClient } from "../../../config/apiClient";
-import type { AuthResponse, LoginInput } from "../types/auth.types";
+import type { AuthResponse, LoginInput, RegisterInput } from "../types/auth.types";
 
 export async function loginApi ( data: LoginInput): Promise<AuthResponse>{
   const response = await apiClient.post<AuthResponse>('/auth/login', {
@@ -10,7 +10,7 @@ export async function loginApi ( data: LoginInput): Promise<AuthResponse>{
   return response.data;
 }
 
-export async function registerApi(data: unknown) {
+export async function registerApi(data: RegisterInput) {
   const response = await apiClient.post('/auth/register', data)
   return response.data
 }

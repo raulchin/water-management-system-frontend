@@ -2,15 +2,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { UserPlus, ChevronDown } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
+
+import { useState } from 'react'
 import { z } from 'zod'
 
+import { registerApi } from '../api/authApi';
+
 const registerSchema = z.object({
-  firstName: z.string().min(1, 'El nombre es obligatorio'),
-  lastName: z.string().min(1, 'El apellido es obligatorio'),
+  username: z.string().min(1, 'El usuario es obligatorio'),
+  lastName: z.string().min(1, 'Los nombres es obligatorio'),
   email: z.string().min(1, 'El correo es obligatorio').email('Ingresa un correo valido'),
-  phone: z.string().min(1, 'El telefono es obligatorio'),
   password: z.string().min(6, 'La contrasena debe tener al menos 6 caracteres'),
-  rol: z.string().min(6, 'seleccione un rol'),
+  rol: z.string().min(1, 'Seleccione un rol'),
   acceptTerms: z.boolean(),
 }).refine((data) => data.acceptTerms, {
   message: 'Debes aceptar los terminos y condiciones',
@@ -31,19 +34,41 @@ export function RegisterPage() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      firstName: '',
+      username: '',
       lastName: '',
       email: '',
-      phone: '',
       password: '',
       rol: '',
       acceptTerms: false,
     },
   })
 
-  const onSubmit = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 700))
-    navigate('/login', { replace: true })
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const onSubmit = async (data: RegisterFormData) => {
+
+    console.log('submit ejecutado', data)
+    try{
+      setServerError(null);
+
+      const registerPayload = {
+        username: data.username,
+        password: data.password,
+        email: data.email,
+        nombres: data.lastName,
+        rol: data.rol,
+      }
+      console.log('Trama enviada a registro:', registerPayload)
+
+      await registerApi(registerPayload)
+
+      navigate('/login', { replace: true });
+    }catch{
+      setServerError('No se pudo registrar el usuario');
+    }
+    
+    
+    
   }
 
   return (
@@ -65,15 +90,16 @@ export function RegisterPage() {
             </header>
 
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+              {serverError ? <p className="text-sm text-red-700">{serverError}</p> : null}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <input
                     type="text"
                     placeholder="Ingrese Usuario"
                     className="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-5 text-slate-700 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
-                    {...register('firstName')}
+                    {...register('username')}
                   />
-                  {errors.firstName ? <p className="mt-1 text-xs text-red-600">{errors.firstName.message}</p> : null}
+                  {errors.username ? <p className="mt-1 text-xs text-red-600">{errors.username.message}</p> : null}
                 </div>
                 <div>
                   <input
@@ -112,6 +138,7 @@ export function RegisterPage() {
                 <option value="admin">Admin</option>
                 <option value="user">Usuario</option>
               </select>
+              {errors.rol ? <p className="mt-1 text-xs text-red-600">{errors.rol.message}</p> : null}
               <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500" size={21} />
             </div>
 

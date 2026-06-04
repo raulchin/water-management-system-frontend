@@ -20,3 +20,11 @@ export type AuthResponse = {
   nombres: string
   roles: string[]
 }
+
+export type RegisterInput = {
+  username: string
+  password: string
+  email: string
+  nombres: string
+  rol: string
+}

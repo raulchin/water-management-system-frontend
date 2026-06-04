@@ -1,10 +1,11 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { LogIn } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import { Link, useNavigate } from 'react-router-dom'
-import { AuthIllustrationPanel } from '../components/AuthIllustrationPanel'
-import { useLogin } from '../hooks/useLogin'
-import { loginSchema, type LoginFormData } from '../schemas/loginSchema'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthIllustrationPanel } from '../components/AuthIllustrationPanel';
+import { useLogin } from '../hooks/useLogin';
+import { loginSchema, type LoginFormData } from '../schemas/loginSchema';
 
 export function LoginPage() {
   const navigate = useNavigate()
@@ -26,6 +27,8 @@ export function LoginPage() {
     await mutateAsync({ username, password })
     navigate('/lecturas', { replace: true })
   }
+
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-200 p-3 sm:p-6">
@@ -50,14 +53,22 @@ export function LoginPage() {
                 {errors.username ? <p className="mt-1 text-xs text-red-600">{errors.username.message}</p> : null}
               </div>
 
-              <div>
+              <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="Password"
-                  className="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-5 text-slate-700 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                  className="h-12 w-full rounded-lg border border-slate-300 bg-slate-100 px-5 pr-12 text-slate-700 placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                   {...register('password')}
                 />
-                {errors.password ? <p className="mt-1 text-xs text-red-600">{errors.password.message}</p> : null}
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-700"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
 
               {isError ? <p className="text-sm text-red-700">{error instanceof Error ? error.message : 'No se pudo iniciar sesion'}</p> : null}
