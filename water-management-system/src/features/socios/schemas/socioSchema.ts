@@ -9,10 +9,7 @@ export const socioSchema = z.object({
   direccion: z.string().min(1, 'La direccion es obligatoria'),
   numeroContrato: z.string().min(1, 'El numero de contrato es obligatorio'),
   numeroMedidor: z.string().min(1, 'El numero de medidor es obligatorio'),
-  fechaAlta: z.string().min(1, 'La fecha de alta es obligatoria'),
-  tipoSocio: z.string().min(1, 'Seleccione el tipo de socio'),
   estado: z.boolean(),
-  observaciones: z.string().max(500, 'Maximo 500 caracteres').optional(),
 })
 
 export type SocioFormData = z.infer<typeof socioSchema>

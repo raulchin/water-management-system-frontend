@@ -25,7 +25,7 @@ export function LoginPage() {
 
   const onSubmit = async ({ username, password }: LoginFormData) => {
     await mutateAsync({ username, password })
-    navigate('/lecturas', { replace: true })
+    navigate('/dashboard', { replace: true })
   }
 
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +38,7 @@ export function LoginPage() {
         <article className="flex items-center justify-center px-6 py-10 sm:px-10">
           <div className="w-full max-w-md space-y-7">
             <header>
-              <h1 className="text-4xl font-bold tracking-tight text-indigo-900">Student Sign in</h1>
+              <h1 className="text-4xl font-bold tracking-tight text-indigo-900">Iniciar Sesion</h1>
               <p className="mt-1 text-sm text-slate-500">Ingresa tu usuario y contrasena para iniciar sesion</p>
             </header>
 

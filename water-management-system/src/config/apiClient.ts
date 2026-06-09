@@ -8,7 +8,14 @@ export const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-})
+});
+
+export const partnerApiClient = axios.create({
+  baseURL: import.meta.env.VITE_PARTNER_API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 apiClient.interceptors.request.use((config) => {
     const token = getAuthToken()
