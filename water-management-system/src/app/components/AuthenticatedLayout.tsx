@@ -8,6 +8,9 @@ import {
   Home,
   ReceiptText,
   Users,
+  Link2,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import logoSigap from "../../assets/logo_sigap_canva_con_fondo.svg";
@@ -21,6 +24,7 @@ const menuItems = [
   { label: "Dashboard", to: "/dashboard", icon: Home },
   { label: "Socios", to: "/socios", icon: Users },
   { label: "Medidores", to: "/medidores", icon: Gauge },
+  { label: "Asignaciones", to: "/asignaciones", icon: Link2 },
   { label: "Lecturas", to: "/lecturas", icon: ClipboardList },
   { label: "Facturacion", to: "/facturacion", icon: ReceiptText },
   { label: "Comunidad", to: "/comunidad", icon: Users },
@@ -48,10 +52,16 @@ export function AuthenticatedLayout() {
   const activeItem = menuItems.find(({ to }) => pathname.startsWith(to));
   const breadcrumbLabel =
     pathname === "/socios"
-      ? "Registro de nuevos socios"
-      : pathname === "/lecturas/nueva"
-        ? "Registro de nueva lectura"
-        : (activeItem?.label ?? "Dashboard");
+      ? "Listado de socios"
+      : pathname === "/socios/nuevo"
+        ? "Registro de nuevos socios"
+        : pathname === "/medidores"
+          ? "Listado de medidores"
+          : pathname === "/medidores/nuevo"
+            ? "Registro de nuevo medidor"
+            : pathname === "/lecturas/nueva"
+              ? "Registro de nueva lectura"
+              : (activeItem?.label ?? "Dashboard");
 
   const handleLogout = () => {
     setIsUserMenuOpen(false);
@@ -61,14 +71,28 @@ export function AuthenticatedLayout() {
 
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#f4f7fb] text-slate-900 lg:flex">
-      <aside className="border-r border-slate-200 bg-white shadow-xl shadow-slate-200/70 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[270px] lg:flex-col">
-        <div className="flex h-[104px] items-center bg-gradient-to-r from-[#372080] via-[#43239a] to-[#3a238f] px-8 shadow-[inset_-18px_0_28px_rgba(0,0,0,0.12)]">
+      <aside
+        className={`border-r border-slate-200 bg-white shadow-xl shadow-slate-200/70 transition-all duration-300 lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col ${
+          isSidebarCollapsed ? "lg:w-[84px]" : "lg:w-[270px]"
+        }`}
+      >
+        <div
+          className={`flex h-[104px] items-center bg-gradient-to-r from-[#372080] via-[#43239a] to-[#3a238f] px-8 ${
+            isSidebarCollapsed ? "justify-center px-3" : ""
+          }`}
+        >
           <img
             src={logoSigap}
             alt="SIGAP"
-            className="h-[74px] w-auto object-contain"
+            className={
+              isSidebarCollapsed
+                ? "h-12 w-12 rounded-full object-cover"
+                : "h-[74px] w-auto object-contain"
+            }
           />
         </div>
 
@@ -78,36 +102,35 @@ export function AuthenticatedLayout() {
               key={to}
               to={to}
               className={({ isActive }) =>
-                `relative flex min-w-max items-center gap-4 rounded-xl px-4 py-4 text-base font-semibold transition lg:min-w-0 ${
+                `relative flex items-center rounded-xl text-base font-semibold transition ${
+                  isSidebarCollapsed
+                    ? "mx-auto h-12 w-12 justify-center px-0 py-0"
+                    : "gap-4 px-4 py-4"
+                } ${
                   isActive
-                    ? "bg-[#efe9ff] text-[#4b2cb1] shadow-sm before:absolute before:left-0 before:top-2 before:h-[calc(100%-1rem)] before:w-1 before:rounded-r-full before:bg-[#5536d4]"
+                    ? "bg-[#efe9ff] text-[#4b2cb1] shadow-sm"
                     : "text-[#34405f] hover:bg-slate-100 hover:text-[#4b2cb1]"
                 }`
               }
             >
-              <Icon size={25} strokeWidth={1.9} />
-              <span>{label}</span>
+              <Icon size={isSidebarCollapsed ? 24 : 25} strokeWidth={2} />
+
+              {!isSidebarCollapsed ? <span>{label}</span> : null}
             </NavLink>
           ))}
         </nav>
-
-        <div className="hidden px-5 pb-8 lg:block">
-          <div className="flex items-center gap-4 rounded-2xl bg-white p-3 shadow-sm">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
-              <img
-                src={logoSigap}
-                alt="SIGAP"
-                className="h-10 w-10 rounded-full object-cover object-left"
-              />
-            </div>
-            <div>
-              <p className="font-bold text-[#28208f]">SIGAP</p>
-              <p className="text-sm leading-5 text-[#53607d]">
-                Gestion transparente, agua para la comunidad.
-              </p>
-            </div>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={() => setIsSidebarCollapsed((value) => !value)}
+          className="mx-5 mb-5 flex h-11 items-center justify-center rounded-xl border border-slate-200 text-[#4b2cb1] transition hover:bg-[#efe9ff]"
+          aria-label={isSidebarCollapsed ? "Expandir menu" : "Contraer menu"}
+        >
+          {isSidebarCollapsed ? (
+            <PanelLeftOpen size={26} />
+          ) : (
+            <PanelLeftClose size={26} />
+          )}
+        </button>
       </aside>
 
       <div className="min-w-0 flex-1">

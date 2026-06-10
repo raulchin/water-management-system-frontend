@@ -4,7 +4,8 @@ import { LoginPage, RegisterPage } from '../../features/auth'
 import { useAuthSession } from '../../features/auth/hooks/useAuthSession'
 import { LecturasPage, NuevaLecturaPage } from '../../features/lecturas'
 import { NuevoSocioPage, SociosPage } from '../../features/socios';
-import { EditarSocioPage } from '../../features/socios/pages/EditarSocioPage'
+import { EditarSocioPage } from '../../features/socios/pages/EditarSocioPage';
+import { MedidoresPage, NewMeterPage } from '../../features/medidores';
 
 export function AppRouter() {
   const { isAuthenticated } = useAuthSession()
@@ -18,7 +19,8 @@ export function AppRouter() {
         <Route path="/dashboard" element={<ModulePlaceholder title="Dashboard" />} />
         <Route path="/socios" element={<SociosPage />} />
         <Route path="/socios/nuevo" element={<NuevoSocioPage />} />
-        <Route path="/medidores" element={<ModulePlaceholder title="Medidores" />} />
+        <Route path="/medidores" element={<MedidoresPage />} />
+        <Route path="/medidores/nuevo" element={<NewMeterPage />} />
         <Route path="/lecturas" element={<LecturasPage />} />
         <Route path="/lecturas/nueva" element={<NuevaLecturaPage />} />
         <Route path="/facturacion" element={<ModulePlaceholder title="Facturacion" />} />

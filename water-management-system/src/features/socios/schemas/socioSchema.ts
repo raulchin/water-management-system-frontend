@@ -7,8 +7,6 @@ export const socioSchema = z.object({
   telefono: z.string().min(1, 'El telefono es obligatorio'),
   correo: z.string().email('Ingrese un correo valido').optional().or(z.literal('')),
   direccion: z.string().min(1, 'La direccion es obligatoria'),
-  numeroContrato: z.string().min(1, 'El numero de contrato es obligatorio'),
-  numeroMedidor: z.string().min(1, 'El numero de medidor es obligatorio'),
   estado: z.boolean(),
 })
 

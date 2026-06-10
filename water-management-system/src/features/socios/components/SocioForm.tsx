@@ -1,15 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Brush,
-  FileText,
-  Gauge,
-  IdCard,
-  Mail,
-  MapPin,
-  Phone,
-  Save,
-  X,
-} from "lucide-react";
+import { Brush, IdCard, Mail, MapPin, Phone, Save, X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { socioSchema, type SocioFormData } from "../schemas/socioSchema";
 
@@ -18,6 +8,9 @@ type Props = {
   onSubmit: (data: SocioFormData) => void;
   defaultValues?: SocioFormData;
   submitLabel?: string;
+  serverError?: string | null;
+  successMessage?: string | null;
+  onClearError?: () => void;
 };
 
 const emptySocioValues: SocioFormData = {
@@ -27,8 +20,6 @@ const emptySocioValues: SocioFormData = {
   telefono: "",
   correo: "",
   direccion: "",
-  numeroContrato: "",
-  numeroMedidor: "",
   estado: true,
 };
 
@@ -37,7 +28,15 @@ const inputClass =
 const labelClass = "mb-2 block text-sm font-bold text-[#303659]";
 const errorClass = "mt-1 text-xs font-semibold text-red-600";
 
-export function SocioForm({ onCancel, onSubmit, defaultValues, submitLabel }: Props) {
+export function SocioForm({
+  onCancel,
+  onSubmit,
+  defaultValues,
+  submitLabel,
+  serverError,
+  successMessage,
+  onClearError,
+}: Props) {
   const {
     register,
     handleSubmit,
@@ -54,12 +53,34 @@ export function SocioForm({ onCancel, onSubmit, defaultValues, submitLabel }: Pr
 
   const handleClear = () => {
     reset(defaultValues ?? emptySocioValues);
+    onClearError?.();
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
       <div className="grid items-start gap-8 2xl:grid-cols-[minmax(0,1fr)_255px]">
-        <div className="grid content-start gap-x-8 gap-y-4 xl:grid-cols-3">
+        <div className="grid content-start gap-x-6 gap-y-3 xl:grid-cols-[minmax(0,600px)_minmax(0,600px)]">
+          <div>
+            <label className={labelClass} htmlFor="cedula">
+              Cedula <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="cedula"
+                className={inputClass}
+                placeholder="Ej. 0102030405"
+                {...register("cedula")}
+              />
+              <IdCard
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
+                size={21}
+              />
+            </div>
+            {errors.cedula ? (
+              <p className={errorClass}>{errors.cedula.message}</p>
+            ) : null}
+          </div>
+
           <div>
             <label className={labelClass} htmlFor="nombres">
               Nombres <span className="text-red-500">*</span>
@@ -87,27 +108,6 @@ export function SocioForm({ onCancel, onSubmit, defaultValues, submitLabel }: Pr
             />
             {errors.apellidos ? (
               <p className={errorClass}>{errors.apellidos.message}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="cedula">
-              Cedula <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="cedula"
-                className={inputClass}
-                placeholder="Ej. 0102030405"
-                {...register("cedula")}
-              />
-              <IdCard
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
-                size={21}
-              />
-            </div>
-            {errors.cedula ? (
-              <p className={errorClass}>{errors.cedula.message}</p>
             ) : null}
           </div>
 
@@ -174,49 +174,6 @@ export function SocioForm({ onCancel, onSubmit, defaultValues, submitLabel }: Pr
               <p className={errorClass}>{errors.direccion.message}</p>
             ) : null}
           </div>
-
-          <div>
-            <label className={labelClass} htmlFor="numeroContrato">
-              Numero de contrato <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="numeroContrato"
-                className={inputClass}
-                placeholder="Ej. CT-00012345"
-                {...register("numeroContrato")}
-              />
-              <FileText
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
-                size={21}
-              />
-            </div>
-            {errors.numeroContrato ? (
-              <p className={errorClass}>{errors.numeroContrato.message}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="numeroMedidor">
-              Numero de medidor <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="numeroMedidor"
-                className={inputClass}
-                placeholder="Ej. MED-00012345"
-                {...register("numeroMedidor")}
-              />
-              <Gauge
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
-                size={21}
-              />
-            </div>
-            {errors.numeroMedidor ? (
-              <p className={errorClass}>{errors.numeroMedidor.message}</p>
-            ) : null}
-          </div>
-
           <div>
             <span className={labelClass}>
               Estado <span className="text-red-500">*</span>
@@ -243,8 +200,18 @@ export function SocioForm({ onCancel, onSubmit, defaultValues, submitLabel }: Pr
                 {estado ? "Activo" : "Inactivo"}
               </span>
             </div>
-          </div>
+            {serverError ? (
+              <p className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+                {serverError}
+              </p>
+            ) : null}
 
+            {successMessage ? (
+              <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                {successMessage}
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <aside className="flex justify-center 2xl:justify-end">
@@ -264,7 +231,7 @@ export function SocioForm({ onCancel, onSubmit, defaultValues, submitLabel }: Pr
           className="inline-flex h-13 items-center justify-center gap-3 rounded-lg bg-[#5b35d5] px-8 py-4 text-base font-bold text-white shadow-sm transition hover:bg-[#4b2cb1]"
         >
           <Save size={21} />
-          {submitLabel ?? 'Guardar socio'}
+          {submitLabel ?? "Guardar socio"}
         </button>
         <button
           type="button"

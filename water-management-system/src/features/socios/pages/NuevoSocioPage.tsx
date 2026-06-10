@@ -38,21 +38,15 @@ export function NuevoSocioPage() {
       </div>
 
       <div className="px-6 py-6 sm:px-8">
-        {serverError ? (
-          <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            {serverError}
-          </p>
-        ) : null}
-
-        {successMessage ? (
-          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-            {successMessage}
-          </p>
-        ) : null}
-
         <SocioForm
           onSubmit={handleSubmit}
           onCancel={() => navigate("/socios")}
+          serverError={serverError}
+          successMessage={successMessage}
+          onClearError={() => {
+            setServerError(null);
+            setSuccessMessage(null);
+          }}
         />
       </div>
     </section>
