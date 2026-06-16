@@ -59,9 +59,13 @@ export function AuthenticatedLayout() {
           ? "Listado de medidores"
           : pathname === "/medidores/nuevo"
             ? "Registro de nuevo medidor"
-            : pathname === "/lecturas/nueva"
-              ? "Registro de nueva lectura"
-              : (activeItem?.label ?? "Dashboard");
+            : pathname === "/asignaciones/asignacion"
+              ? "Asignacion de medidor a socio"
+              : pathname === "/asignaciones"
+                ? "Listado de asignaciones"
+                : pathname === "/lecturas/nueva"
+                  ? "Registro de nueva lectura"
+                  : (activeItem?.label ?? "Dashboard");
 
   const handleLogout = () => {
     setIsUserMenuOpen(false);
