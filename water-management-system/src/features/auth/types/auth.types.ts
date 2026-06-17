@@ -19,6 +19,7 @@ export type AuthResponse = {
   email: string
   nombres: string
   roles: string[]
+  roleId: number
 }
 
 export type RegisterInput = {

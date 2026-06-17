@@ -45,4 +45,5 @@ export type AuthUserSession = {
   email: string
   nombres: string
   roles: string[]
+  roleId?: number
 }

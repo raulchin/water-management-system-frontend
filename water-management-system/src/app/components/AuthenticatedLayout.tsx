@@ -1,3 +1,4 @@
+
 import {
   BarChart3,
   Bell,
@@ -6,12 +7,18 @@ import {
   Gauge,
   HelpCircle,
   Home,
+  LayoutDashboard,
+  Receipt,
   ReceiptText,
+  Settings,
   Users,
+  UserCog,
   Link2,
   PanelLeftClose,
   PanelLeftOpen,
+  type LucideIcon,
 } from "lucide-react";
+
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import logoSigap from "../../assets/logo_sigap_canva_con_fondo.svg";
 import { clearAuthToken } from "../../features/auth/utils/authStorage";
@@ -20,16 +27,23 @@ import { useAuthSession } from "../../features/auth/hooks/useAuthSession";
 
 import { useState } from "react";
 
-const menuItems = [
-  { label: "Dashboard", to: "/dashboard", icon: Home },
-  { label: "Socios", to: "/socios", icon: Users },
-  { label: "Medidores", to: "/medidores", icon: Gauge },
-  { label: "Asignaciones", to: "/asignaciones", icon: Link2 },
-  { label: "Lecturas", to: "/lecturas", icon: ClipboardList },
-  { label: "Facturacion", to: "/facturacion", icon: ReceiptText },
-  { label: "Comunidad", to: "/comunidad", icon: Users },
-  { label: "Reportes", to: "/reportes", icon: BarChart3 },
-];
+import { useRoleMenus } from "../../features/auth/hooks/useRoleMenus";
+
+
+const iconMap: Record<string, LucideIcon> = {
+  LayoutDashboard,
+  Home,
+  Users,
+  Gauge,
+  ClipboardList,
+  Link2,
+  Receipt,
+  ReceiptText,
+  UserCog,
+  Settings,
+  BarChart3,
+  FileText,
+};
 
 function getUserInitials(name?: string, username?: string) {
   const value = name || username || "Usuario";
@@ -48,6 +62,19 @@ export function AuthenticatedLayout() {
   const { pathname } = useLocation();
 
   const { user } = useAuthSession();
+
+  const { data: roleMenus = [], isLoading: isLoadingMenus } = useRoleMenus(
+    user?.roleId,
+  );
+
+  const menuItems = roleMenus
+    .filter((menu) => menu.active)
+    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .map((menu) => ({
+      label: menu.name,
+      to: menu.path,
+      icon: iconMap[menu.icon] ?? FileText,
+    }));
 
   const activeItem = menuItems.find(({ to }) => pathname.startsWith(to));
   const breadcrumbLabel =
@@ -101,27 +128,37 @@ export function AuthenticatedLayout() {
         </div>
 
         <nav className="flex gap-2 overflow-x-auto px-4 py-5 lg:flex-1 lg:flex-col lg:gap-3 lg:overflow-visible lg:px-5 lg:py-8">
-          {menuItems.map(({ label, to, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `relative flex items-center rounded-xl text-base font-semibold transition ${
-                  isSidebarCollapsed
-                    ? "mx-auto h-12 w-12 justify-center px-0 py-0"
-                    : "gap-4 px-4 py-4"
-                } ${
-                  isActive
-                    ? "bg-[#efe9ff] text-[#4b2cb1] shadow-sm"
-                    : "text-[#34405f] hover:bg-slate-100 hover:text-[#4b2cb1]"
-                }`
-              }
-            >
-              <Icon size={isSidebarCollapsed ? 24 : 25} strokeWidth={2} />
+          {
+            <nav className="flex gap-2 overflow-x-auto px-4 py-5 lg:flex-1 lg:flex-col lg:gap-3 lg:overflow-visible lg:px-5 lg:py-8">
+              {isLoadingMenus ? (
+                <p className="px-4 text-sm font-semibold text-slate-500">
+                  Cargando menu...
+                </p>
+              ) : (
+                menuItems.map(({ label, to, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    className={({ isActive }) =>
+                      `relative flex items-center rounded-xl text-base font-semibold transition ${
+                        isSidebarCollapsed
+                          ? "mx-auto h-12 w-12 justify-center px-0 py-0"
+                          : "gap-4 px-4 py-4"
+                      } ${
+                        isActive
+                          ? "bg-[#efe9ff] text-[#4b2cb1] shadow-sm"
+                          : "text-[#34405f] hover:bg-slate-100 hover:text-[#4b2cb1]"
+                      }`
+                    }
+                  >
+                    <Icon size={isSidebarCollapsed ? 24 : 25} strokeWidth={2} />
 
-              {!isSidebarCollapsed ? <span>{label}</span> : null}
-            </NavLink>
-          ))}
+                    {!isSidebarCollapsed ? <span>{label}</span> : null}
+                  </NavLink>
+                ))
+              )}
+            </nav>
+          }
         </nav>
         <button
           type="button"
