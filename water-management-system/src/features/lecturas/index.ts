@@ -1,2 +1,3 @@
-export { LecturasPage } from './pages/LecturasPage'
-export { NuevaLecturaPage } from './pages/NuevaLecturaPage'
+
+export { MeterReadingsPage as LecturasPage } from './pages/MeterReadingsPage';
+export { NewMeterReadingPage as NuevaLecturaPage } from './pages/NewMeterReadingPage';

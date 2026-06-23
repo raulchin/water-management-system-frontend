@@ -81,6 +81,15 @@ export const meterApiClient = axios.create({
   },
 });
 
+export const readingsApiClient = axios.create({
+  baseURL: import.meta.env.VITE_READINGS_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 applyInterceptors(apiClient);
 applyInterceptors(partnerApiClient);
 applyInterceptors(meterApiClient);
+
+applyInterceptors(readingsApiClient);
