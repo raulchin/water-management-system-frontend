@@ -6,12 +6,12 @@ import {
   type MeterReadingFormData,
 } from "../schemas/meterReadingSchema";
 
-import type {
-  MedidorAsignacion,
-  SocioAsignacion,
-} from "../../medidores/types/asignacionMedidor.types";
-
 import { useEffect } from "react";
+
+import type {
+  ReadingAssignmentPartner,
+  ReadingMeterAssignment,
+} from "../../medidores/types/asignacionMedidor.types";
 
 type Props = {
   onSubmit: (data: MeterReadingFormData) => void;
@@ -20,14 +20,13 @@ type Props = {
   successMessage?: string | null;
   isSaving?: boolean;
   onClearMessages?: () => void;
+  onClearSelection?: () => void;
   isSearchingPartner?: boolean;
-  isSearchingMeter?: boolean;
-  meterBrand?: string;
-  meterLocation?: string;
-  partner?: SocioAsignacion | null;
-  meter?: MedidorAsignacion | null;
+  assignmentPartner?: ReadingAssignmentPartner | null;
+  partnerAssignments?: ReadingMeterAssignment[];
+  selectedAssignment?: ReadingMeterAssignment | null;
   onSearchPartner?: (identification: string) => void;
-  onSearchMeter?: (meterNumber: string) => void;
+  onSelectAssignment?: (assignment: ReadingMeterAssignment) => void;
 };
 
 const defaultValues: MeterReadingFormData = {
@@ -60,12 +59,13 @@ export function MeterReadingForm({
   successMessage,
   isSaving,
   isSearchingPartner,
-  isSearchingMeter,
-  partner,
-  meter,
+  assignmentPartner,
+  partnerAssignments = [],
+  selectedAssignment,
   onSearchPartner,
-  onSearchMeter,
+  onSelectAssignment,
   onClearMessages,
+  onClearSelection,
 }: Props) {
   const {
     register,
@@ -88,22 +88,27 @@ export function MeterReadingForm({
   const handleClear = () => {
     reset(defaultValues);
     onClearMessages?.();
+    onClearSelection?.();
   };
+
   const partnerIdentification = watch("partnerIdentification");
 
   useEffect(() => {
-    if (partner) {
-      setValue("partnerId", partner.idPartner, { shouldValidate: true });
+    if (assignmentPartner && selectedAssignment) {
+      setValue("partnerId", assignmentPartner.socioId, {
+        shouldValidate: true,
+      });
+      setValue("assignmentId", selectedAssignment.asignacionId, {
+        shouldValidate: true,
+      });
+      setValue("meterId", selectedAssignment.medidorId, {
+        shouldValidate: true,
+      });
+      setValue("meterNumber", selectedAssignment.numeroMedidor, {
+        shouldValidate: true,
+      });
     }
-  }, [partner, setValue]);
-
-  const meterNumber = watch("meterNumber");
-
-  useEffect(() => {
-    if (meter) {
-      setValue("meterId", meter.medidorId, { shouldValidate: true });
-    }
-  }, [meter, setValue]);
+  }, [assignmentPartner, selectedAssignment, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
@@ -146,7 +151,7 @@ export function MeterReadingForm({
                 <label className={labelClass}>Nombre</label>
                 <input
                   className={readOnlyClass}
-                  value={partner ? `${partner.names} ${partner.lastName}` : ""}
+                  value={assignmentPartner?.nombreSocio ?? ""}
                   readOnly
                 />
               </div>
@@ -155,12 +160,94 @@ export function MeterReadingForm({
                 <label className={labelClass}>Correo</label>
                 <input
                   className={readOnlyClass}
-                  value={partner?.email ?? ""}
+                  value={assignmentPartner?.email ?? ""}
                   readOnly
                 />
               </div>
             </div>
           </div>
+
+          {partnerAssignments.length > 0 ? (
+            <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white">
+              <div className="border-b border-slate-200 px-4 py-3">
+                <h3 className="text-sm font-bold text-[#201a57]">
+                  Medidores asignados al socio
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Seleccione el medidor para registrar la lectura.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 text-slate-700">
+                    <tr>
+                      <th className="px-4 py-3">Seleccionar</th>
+                      <th className="px-4 py-3">Medidor</th>
+                      <th className="px-4 py-3">Marca</th>
+                      <th className="px-4 py-3">Modelo</th>
+                      <th className="px-4 py-3 text-center">Estado</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {partnerAssignments.map((assignment) => {
+                      const isSelected =
+                        selectedAssignment?.asignacionId ===
+                        assignment.asignacionId;
+
+                      return (
+                        <tr
+                          key={assignment.asignacionId}
+                          className={`border-t border-slate-100 transition ${
+                            isSelected ? "bg-[#efe9ff]" : "hover:bg-slate-50"
+                          }`}
+                        >
+                          <td className="px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={() => onSelectAssignment?.(assignment)}
+                              className={`rounded-lg px-3 py-1 text-xs font-bold transition ${
+                                isSelected
+                                  ? "bg-[#5b35d5] text-white"
+                                  : "border border-[#5b35d5] bg-white text-[#5b35d5] hover:bg-[#efe9ff]"
+                              }`}
+                            >
+                              {isSelected ? "Seleccionado" : "Seleccionar"}
+                            </button>
+                          </td>
+
+                          <td className="px-4 py-3 font-semibold text-slate-900">
+                            {assignment.numeroMedidor}
+                          </td>
+
+                          <td className="px-4 py-3">
+                            {assignment.marcaMedidor}
+                          </td>
+
+                          <td className="px-4 py-3">
+                            {assignment.modeloMedidor}
+                          </td>
+
+                          <td className="px-4 py-3 text-center">
+                            <span
+                              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold text-white ${
+                                assignment.estadoAsignacion === "ACTIVO"
+                                  ? "bg-green-500"
+                                  : "bg-pink-600"
+                              }`}
+                            >
+                              {assignment.estadoAsignacion}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ) : null}
 
           <div className="lg:col-span-2">
             <div className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_minmax(0,1fr)]">
@@ -172,21 +259,10 @@ export function MeterReadingForm({
                 <div className="grid gap-2 grid-cols-[minmax(0,1fr)_44px]">
                   <input
                     id="meterNumber"
-                    className={inputClass}
-                    placeholder="MED-0001"
-                    autoComplete="new-password"
+                    className={readOnlyClass}
+                    readOnly
                     {...register("meterNumber")}
                   />
-
-                  <button
-                    type="button"
-                    onClick={() => onSearchMeter?.(meterNumber)}
-                    disabled={isSearchingMeter}
-                    className="inline-flex h-11 items-center justify-center rounded-lg bg-[#5b35d5] text-white shadow-sm transition hover:bg-[#4b2cb1] disabled:cursor-not-allowed disabled:opacity-70"
-                    aria-label="Buscar medidor"
-                  >
-                    <Search size={18} />
-                  </button>
                 </div>
 
                 {errors.meterNumber ? (
@@ -198,72 +274,92 @@ export function MeterReadingForm({
                 <label className={labelClass}>Marca</label>
                 <input
                   className={readOnlyClass}
-                  value={meter?.marca ?? ""}
+                  value={selectedAssignment?.marcaMedidor ?? ""}
                   readOnly
                 />
               </div>
 
               <div>
-                <label className={labelClass}>Ubicacion</label>
+                <label className={labelClass}>Modelo</label>
                 <input
                   className={readOnlyClass}
-                  value={meter?.ubicacion ?? ""}
+                  value={selectedAssignment?.modeloMedidor ?? ""}
                   readOnly
                 />
               </div>
             </div>
           </div>
 
-          <div>
-            <label className={labelClass} htmlFor="assignmentId">
-              ID asignacion <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="assignmentId"
-              type="number"
-              className={inputClass}
-              placeholder="Ej. 10"
-              {...register("assignmentId", { valueAsNumber: true })}
-            />
-            {errors.assignmentId ? (
-              <p className={errorClass}>{errors.assignmentId.message}</p>
-            ) : null}
-          </div>
+          <div className="lg:col-span-2">
+            <div className="grid gap-4 lg:grid-cols-4">
+              <div>
+                <label className={labelClass} htmlFor="period">
+                  Periodo <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="period"
+                  type="month"
+                  className={inputClass}
+                  {...register("period")}
+                />
+                {errors.period ? (
+                  <p className={errorClass}>{errors.period.message}</p>
+                ) : null}
+              </div>
 
-          <div>
-            <label className={labelClass} htmlFor="period">
-              Periodo <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="period"
-              type="month"
-              className={inputClass}
-              {...register("period")}
-            />
-            {errors.period ? (
-              <p className={errorClass}>{errors.period.message}</p>
-            ) : null}
-          </div>
+              <div>
+                <label className={labelClass} htmlFor="readingDate">
+                  Fecha lectura <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    id="readingDate"
+                    type="date"
+                    className={inputClass}
+                    {...register("readingDate")}
+                  />
+                  <Calendar
+                    className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
+                    size={20}
+                  />
+                </div>
+                {errors.readingDate ? (
+                  <p className={errorClass}>{errors.readingDate.message}</p>
+                ) : null}
+              </div>
 
-          <div>
-            <label className={labelClass} htmlFor="readingDate">
-              Fecha lectura <span className="text-red-500">*</span>
-            </label>
-            <div className="relative">
-              <input
-                id="readingDate"
-                type="date"
-                className={inputClass}
-                {...register("readingDate")}
-              />
-              <Calendar
-                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-500"
-                size={20}
-              />
+              <div>
+                <label className={labelClass} htmlFor="previousReading">
+                  Lectura anterior <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="previousReading"
+                  type="number"
+                  step="0.01"
+                  className={inputClass}
+                  {...register("previousReading", { valueAsNumber: true })}
+                />
+                {errors.previousReading ? (
+                  <p className={errorClass}>{errors.previousReading.message}</p>
+                ) : null}
+              </div>
+
+              <div>
+                <label className={labelClass} htmlFor="currentReading">
+                  Lectura actual <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="currentReading"
+                  type="number"
+                  step="0.01"
+                  className={inputClass}
+                  {...register("currentReading", { valueAsNumber: true })}
+                />
+                {errors.currentReading ? (
+                  <p className={errorClass}>{errors.currentReading.message}</p>
+                ) : null}
+              </div>
             </div>
-            {errors.readingDate ? (
-              <p className={errorClass}>{errors.readingDate.message}</p>
-            ) : null}
           </div>
 
           <div>
@@ -277,38 +373,6 @@ export function MeterReadingForm({
             </select>
             {errors.status ? (
               <p className={errorClass}>{errors.status.message}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="previousReading">
-              Lectura anterior <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="previousReading"
-              type="number"
-              step="0.01"
-              className={inputClass}
-              {...register("previousReading", { valueAsNumber: true })}
-            />
-            {errors.previousReading ? (
-              <p className={errorClass}>{errors.previousReading.message}</p>
-            ) : null}
-          </div>
-
-          <div>
-            <label className={labelClass} htmlFor="currentReading">
-              Lectura actual <span className="text-red-500">*</span>
-            </label>
-            <input
-              id="currentReading"
-              type="number"
-              step="0.01"
-              className={inputClass}
-              {...register("currentReading", { valueAsNumber: true })}
-            />
-            {errors.currentReading ? (
-              <p className={errorClass}>{errors.currentReading.message}</p>
             ) : null}
           </div>
 

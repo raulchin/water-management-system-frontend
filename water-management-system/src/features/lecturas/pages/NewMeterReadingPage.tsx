@@ -5,13 +5,15 @@ import { MeterReadingForm } from "../components/MeterReadingForm";
 import { useCreateMeterReading } from "../hooks/useCreateMeterReading";
 import type { MeterReadingFormData } from "../schemas/meterReadingSchema";
 
-import { useSearchPartnerByIdentification } from "../../medidores/hooks/useSearchPartnerByIdentification";
+import { useSearchAssignmentsByPartnerIdentification } from "../../medidores/hooks/useSearchAssignmentsByPartnerIdentification";
+
 import type {
-  MedidorAsignacion,
-  SocioAsignacion,
+  ReadingAssignmentPartner,
+  ReadingMeterAssignment,
 } from "../../medidores/types/asignacionMedidor.types";
 
-import { useSearchMeterByNumber } from "../../medidores/hooks/useSearchMeterByNumber";
+
+
 
 export function NewMeterReadingPage() {
   const navigate = useNavigate();
@@ -19,20 +21,29 @@ export function NewMeterReadingPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const searchAssignmentsMutation = useSearchAssignmentsByPartnerIdentification();
+
   const getBackendMessage = (error: any, fallback: string) =>
     error.response?.data?.errors?.[0]?.defaultMessage ??
     error.response?.data?.message ??
     fallback;
 
   const handleSubmit = async (data: MeterReadingFormData) => {
+    if (!assignmentPartner || !selectedAssignment) {
+      setServerError(
+        "Debe seleccionar un medidor asignado antes de guardar la lectura",
+      );
+      return;
+    }
+
     try {
       setServerError(null);
       setSuccessMessage(null);
 
       await mutateAsync({
-        meterId: data.meterId,
-        assignmentId: data.assignmentId,
-        partnerId: data.partnerId,
+        meterId: selectedAssignment.medidorId,
+        assignmentId: selectedAssignment.asignacionId,
+        partnerId: assignmentPartner.socioId,
         period: data.period,
         readingDate: data.readingDate,
         previousReading: data.previousReading,
@@ -49,48 +60,48 @@ export function NewMeterReadingPage() {
     }
   };
 
+  
+
   const handleSearchPartner = async (identification: string) => {
     try {
       setServerError(null);
       setSuccessMessage(null);
-      setPartner(null);
+      setAssignmentPartner(null);
+      setPartnerAssignments([]);
+      setSelectedAssignment(null);
 
-      const result = await searchPartnerMutation.mutateAsync(identification);
+      const result =
+        await searchAssignmentsMutation.mutateAsync(identification);
 
-      console.log("Socio encontrado para lectura:", result);
+      console.log("Asignaciones encontradas para lectura:", result);
 
-      setPartner(result);
+      setAssignmentPartner(result.socio);
+      setPartnerAssignments(result.asignaciones);
+
+      if (result.asignaciones.length === 1) {
+        setSelectedAssignment(result.asignaciones[0]);
+      }
     } catch (error: any) {
-      setPartner(null);
-      setServerError(getBackendMessage(error, "No se pudo encontrar el socio"));
-    }
-  };
-
-  const handleSearchMeter = async (meterNumber: string) => {
-    try {
-      setServerError(null);
-      setSuccessMessage(null);
-      setMeter(null);
-
-      const result = await searchMeterMutation.mutateAsync(meterNumber);
-
-      console.log("Medidor encontrado para lectura:", result);
-
-      setMeter(result);
-    } catch (error: any) {
-      setMeter(null);
+      setAssignmentPartner(null);
+      setPartnerAssignments([]);
+      setSelectedAssignment(null);
       setServerError(
-        getBackendMessage(error, "No se pudo encontrar el medidor"),
+        getBackendMessage(
+          error,
+          "No se encontraron asignaciones para el socio",
+        ),
       );
     }
   };
-  const [partner, setPartner] = useState<SocioAsignacion | null>(null);
 
-  const searchPartnerMutation = useSearchPartnerByIdentification();
 
-  const [meter, setMeter] = useState<MedidorAsignacion | null>(null);
-
-  const searchMeterMutation = useSearchMeterByNumber();
+  const [assignmentPartner, setAssignmentPartner] =
+    useState<ReadingAssignmentPartner | null>(null);
+  const [partnerAssignments, setPartnerAssignments] = useState<
+    ReadingMeterAssignment[]
+  >([]);
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<ReadingMeterAssignment | null>(null);
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -113,15 +124,20 @@ export function NewMeterReadingPage() {
           serverError={serverError}
           successMessage={successMessage}
           isSaving={isPending}
-          partner={partner}
-          meter={meter}
-          isSearchingPartner={searchPartnerMutation.isPending}
-          isSearchingMeter={searchMeterMutation.isPending}
+          isSearchingPartner={searchAssignmentsMutation.isPending}
+          assignmentPartner={assignmentPartner}
+          partnerAssignments={partnerAssignments}
+          selectedAssignment={selectedAssignment}
           onSearchPartner={handleSearchPartner}
-          onSearchMeter={handleSearchMeter}
+          onSelectAssignment={setSelectedAssignment}
           onClearMessages={() => {
             setServerError(null);
             setSuccessMessage(null);
+          }}
+          onClearSelection={() => {
+            setAssignmentPartner(null);
+            setPartnerAssignments([]);
+            setSelectedAssignment(null);
           }}
         />
       </div>

@@ -43,3 +43,24 @@ export type MeterAssignment = {
   estado: EstadoAsignacionMedidor
   observacion?: string
 }
+
+export type ReadingAssignmentPartner = {
+  socioId: number
+  identificacionSocio: string
+  nombreSocio: string
+  email: string
+}
+
+export type ReadingMeterAssignment = {
+  asignacionId: number
+  medidorId: number
+  numeroMedidor: string
+  marcaMedidor: string
+  modeloMedidor: string
+  estadoAsignacion: 'ACTIVO' | 'INACTIVO'
+}
+
+export type ReadingAssignmentsByPartner = {
+  socio: ReadingAssignmentPartner
+  asignaciones: ReadingMeterAssignment[]
+}

@@ -7,7 +7,9 @@ import type {
   SocioAsignacion,
 } from '../types/asignacionMedidor.types';
 
-import type { MeterAssignment } from '../types/asignacionMedidor.types'
+import type { MeterAssignment } from '../types/asignacionMedidor.types';
+
+import type { ReadingAssignmentsByPartner } from '../types/asignacionMedidor.types';
 
 type SocioResponse = {
   codResult: string
@@ -25,6 +27,12 @@ type AsignacionResponse = {
   codResult: string
   message: string
   data: unknown
+}
+
+type ReadingAssignmentsByPartnerResponse = {
+  codResult: string
+  message: string
+  data: ReadingAssignmentsByPartner
 }
 
 export async function searchPartnerByIdentification(identificacion: string): Promise<SocioAsignacion> {
@@ -67,5 +75,17 @@ export async function getMeterAssignments(): Promise<MeterAssignment[]> {
   //console.log('JSON response.data asignaciones:', response.data)
   //console.log('Array de asignaciones:', response.data.data)
   //console.log('JSON asignaciones:', JSON.stringify(response.data, null, 2))
+  return response.data.data
+}
+
+export async function searchAssignmentsByPartnerIdentification(
+  identification: string,
+): Promise<ReadingAssignmentsByPartner> {
+  const response = await meterApiClient.get<ReadingAssignmentsByPartnerResponse>(
+    `/medidor-socios/identificacion/${identification}`,
+  )
+
+  console.log('Asignaciones del socio:', response.data)
+
   return response.data.data
 }
