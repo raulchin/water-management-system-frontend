@@ -1,6 +1,6 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Brush, Calendar, Gauge, IdCard, Link2, MapPin, Save, Search, X } from 'lucide-react'
+import { Brush, Calendar, Gauge, IdCard, Link2, Save, Search, X } from 'lucide-react'
 import { useForm } from 'react-hook-form';
 
 import { meterAssignmentSchema, type MeterAssignmentFormData } from '../schemas/meterAssignmentSchema';

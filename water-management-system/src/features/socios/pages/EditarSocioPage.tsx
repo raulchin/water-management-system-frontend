@@ -38,8 +38,6 @@ export function EditarSocioPage() {
     telefono: socio.phone ?? "",
     correo: socio.email ?? "",
     estado: socio.status ?? true,
-    numeroContrato: "",
-    numeroMedidor: "",
   };
 
   return (
