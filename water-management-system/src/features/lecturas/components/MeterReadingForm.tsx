@@ -6,7 +6,7 @@ import {
   type MeterReadingFormData,
 } from "../schemas/meterReadingSchema";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import type {
   ReadingAssignmentPartner,
@@ -110,6 +110,24 @@ export function MeterReadingForm({
     }
   }, [assignmentPartner, selectedAssignment, setValue]);
 
+  const [partnerSearchError, setPartnerSearchError] = useState<string | null>(
+    null,
+  );
+
+  const handlePartnerSearch = () => {
+    const value = partnerIdentification?.trim() ?? "";
+
+    if (!value) {
+      setPartnerSearchError("Ingrese el criterio para buscar");
+      return;
+    }
+
+    setPartnerSearchError(null);
+    onSearchPartner?.(value);
+  };
+
+  const partnerIdentificationRegister = register("partnerIdentification");
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
       <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -126,12 +144,25 @@ export function MeterReadingForm({
                     id="partnerIdentification"
                     className={inputClass}
                     placeholder="0105744718"
-                    {...register("partnerIdentification")}
+                    {...partnerIdentificationRegister}
+                    onChange={(event) => {
+                      partnerIdentificationRegister.onChange(event);
+
+                      if (partnerSearchError) {
+                        setPartnerSearchError(null);
+                      }
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        handlePartnerSearch();
+                      }
+                    }}
                   />
 
                   <button
                     type="button"
-                    onClick={() => onSearchPartner?.(partnerIdentification)}
+                    onClick={handlePartnerSearch}
                     disabled={isSearchingPartner}
                     className="inline-flex h-11 items-center justify-center rounded-lg bg-[#5b35d5] text-white shadow-sm transition hover:bg-[#4b2cb1] disabled:cursor-not-allowed disabled:opacity-70"
                     aria-label="Buscar socio"
@@ -144,6 +175,8 @@ export function MeterReadingForm({
                   <p className={errorClass}>
                     {errors.partnerIdentification.message}
                   </p>
+                ) : partnerSearchError ? (
+                  <p className={errorClass}>{partnerSearchError}</p>
                 ) : null}
               </div>
 
