@@ -6,6 +6,9 @@ import { LecturasPage, NuevaLecturaPage } from '../../features/lecturas'
 import { NuevoSocioPage, SociosPage } from '../../features/socios';
 import { EditarSocioPage } from '../../features/socios/pages/EditarSocioPage';
 import { MedidoresPage, NewMeterPage, AssignmentMeterPage, MeterAssignmentsPage } from '../../features/medidores';
+import { NewInvoicePage } from '../../features/facturacion/pages/NewInvoicePage';
+import { InvoicesPage } from '../../features/facturacion';
+import { CollectionsPage, NewCollectionPage } from '../../features/cobros';
 
 export function AppRouter() {
   const { isAuthenticated } = useAuthSession()
@@ -25,10 +28,13 @@ export function AppRouter() {
         <Route path="/asignaciones" element={<MeterAssignmentsPage />} />
         <Route path="/lecturas" element={<LecturasPage />} />
         <Route path="/lecturas/nueva" element={<NuevaLecturaPage />} />
-        <Route path="/facturacion" element={<ModulePlaceholder title="Facturacion" />} />
+        <Route path="/cobros" element={<CollectionsPage/>} />
+        <Route path="/cobros/nuevo" element={<NewCollectionPage />} />
         <Route path="/comunidad" element={<ModulePlaceholder title="Comunidad" />} />
         <Route path="/reportes" element={<ModulePlaceholder title="Reportes" />} />
         <Route path="/socios/:id/editar" element={<EditarSocioPage />} />
+        <Route path="/facturacion" element={<InvoicesPage />} />
+        <Route path="/facturacion/nueva" element={<NewInvoicePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

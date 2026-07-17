@@ -88,8 +88,15 @@ export const readingsApiClient = axios.create({
   },
 });
 
+export const billingApiClient = axios.create({
+  baseURL: import.meta.env.VITE_BILLING_API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 applyInterceptors(apiClient);
 applyInterceptors(partnerApiClient);
 applyInterceptors(meterApiClient);
-
 applyInterceptors(readingsApiClient);
+applyInterceptors(billingApiClient);
