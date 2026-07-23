@@ -1,29 +1,49 @@
 import { Link2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from "react-router-dom";
 import { MeterAssignmentsTable } from '../components/MeterAssignmentsTable'
 import { useMeterAssignments } from '../hooks/useMeterAssignments'
+import {  Plus, Settings } from "lucide-react";
 
 export function MeterAssignmentsPage() {
   const { data = [], isLoading, isError } = useMeterAssignments()
 
   const activeAssignments = data.filter((item) => item.estado === 'ACTIVO').length
   const inactiveAssignments = data.filter((item) => item.estado === 'INACTIVO').length
+  const navigate = useNavigate();
 
   return (
-    <section className="mx-auto max-w-7xl space-y-5">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#4b2cb1]">SIGAP</p>
-          <h1 className="text-2xl font-bold text-slate-900">Asignaciones de medidores</h1>
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+      <div className="px-6 pt-6 sm:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#5b35d5] text-white shadow-sm">
+              <Settings size={31} strokeWidth={1.8} />
+            </div>
+
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide text-[#5b35d5]">
+                SIGAP
+              </p>
+              <h1 className="text-3xl font-extrabold tracking-[-0.02em] text-[#201a57]">
+                Asignación de medidor a socio
+              </h1>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/facturacion/nueva")}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#5b35d5] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#4b2cb1]"
+          >
+            <Plus size={18} />
+            Nueva asignación
+          </button>
         </div>
 
-        <Link
-          to="/asignaciones/asignacion"
-          className="rounded-lg bg-[#4b2cb1] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#3b238e]"
-        >
-          Nueva asignacion
-        </Link>
-      </header>
+        <div className="mt-5 h-px bg-[#b7a4ff]" />
+      </div>
+      
 
       <div className="grid gap-4 md:grid-cols-3">
         <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

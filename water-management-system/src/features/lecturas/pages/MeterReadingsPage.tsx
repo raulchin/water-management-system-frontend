@@ -1,33 +1,54 @@
 
-
-import { Link } from 'react-router-dom'
-import { MeterReadingsTable } from '../components/MeterReadingsTable'
-import { useMeterReadings } from '../hooks/useMeterReadings'
+import { MeterReadingsTable } from "../components/MeterReadingsTable";
+import { useMeterReadings } from "../hooks/useMeterReadings";
+import { useNavigate } from "react-router-dom";
+import {  Plus, ClipboardList } from "lucide-react";
 
 export function MeterReadingsPage() {
-  const { data = [], isLoading, isError } = useMeterReadings()
+  const { data = [], isLoading, isError } = useMeterReadings();
+  const navigate = useNavigate();
 
   return (
-    <section className="mx-auto max-w-7xl space-y-5">
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#4b2cb1]">SIGAP</p>
-          <h1 className="text-2xl font-bold text-slate-900">Lecturas de medidores</h1>
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="px-6 pt-6 sm:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#5b35d5] text-white shadow-sm">
+              <ClipboardList size={31} strokeWidth={1.8} />
+            </div>
+
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide text-[#5b35d5]">
+                SIGAP
+              </p>
+              <h1 className="text-3xl font-extrabold tracking-[-0.02em] text-[#201a57]">
+                Lecturas de medidores
+              </h1>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/lecturas/nueva")}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#5b35d5] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#4b2cb1]"
+          >
+            <Plus size={18} />
+            Nueva lectura
+          </button>
         </div>
+        
+        <div className="mt-5 h-px bg-[#b7a4ff]" />
+      </div>
 
-        <Link
-          className="rounded-lg bg-[#4b2cb1] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#3b238e]"
-          to="/lecturas/nueva"
-        >
-          Nueva lectura
-        </Link>
-      </header>
-
-      <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <div className="px-6 py-6 sm:px-8">
         {isLoading ? <p>Cargando lecturas...</p> : null}
-        {isError ? <p className="text-sm text-red-700">No se pudieron cargar las lecturas.</p> : null}
+        {isError ? (
+          <p className="text-sm text-red-700">
+            No se pudieron cargar las lecturas.
+          </p>
+        ) : null}
         {!isLoading && !isError ? <MeterReadingsTable readings={data} /> : null}
       </div>
     </section>
-  )
+  );
 }

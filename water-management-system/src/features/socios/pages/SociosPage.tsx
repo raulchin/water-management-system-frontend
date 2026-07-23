@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import {  Plus, UsersRound } from "lucide-react";
 import { SociosTable } from "../components/SociosTable";
 import { useSocios } from "../hooks/useSocios";
 import { useNavigate } from "react-router-dom";
@@ -15,14 +15,12 @@ export function SociosPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const { data = [], isLoading, isError } = useSocios();
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const navigate = useNavigate();
 
   const handleEdit = (socio: Socio) => {
-
     navigate(`/socios/${socio.idPartner}/editar`);
-
   };
 
   const handleDelete = (socio: Socio) => {
@@ -42,7 +40,7 @@ export function SociosPage() {
       await deleteSocio(socioToDelete.idPartner);
       setSocioToDelete(null);
       // refrescar lista
-      await queryClient.invalidateQueries({ queryKey: ['socios'] })
+      await queryClient.invalidateQueries({ queryKey: ["socios"] });
     } catch (error: any) {
       setDeleteError(
         error.response?.data?.message ?? "No se pudo eliminar el socio",
@@ -51,26 +49,38 @@ export function SociosPage() {
   };
 
   return (
-    <section className="mx-auto max-w-6xl space-y-5">
-      <header className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-[#4b2cb1]">
-            SIGAP
-          </p>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Listado de socios
-          </h1>
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="px-6 pt-6 sm:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-5">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#5b35d5] text-white shadow-sm">
+              <UsersRound size={31} strokeWidth={1.8} />
+            </div>
+
+            <div>
+              <p className="text-sm font-bold uppercase tracking-wide text-[#5b35d5]">
+                SIGAP
+              </p>
+              <h1 className="text-3xl font-extrabold tracking-[-0.02em] text-[#201a57]">
+                Listado de socios
+              </h1>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate("/socios/nuevo")}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#5b35d5] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#4b2cb1]"
+          >
+            <Plus size={18} />
+            Nuevo socio
+          </button>
         </div>
 
-        <Link
-          to="/socios/nuevo"
-          className="rounded-lg bg-[#4b2cb1] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#3b238e]"
-        >
-          Nuevo socio
-        </Link>
-      </header>
+        <div className="mt-5 h-px bg-[#b7a4ff]" />
+      </div>
 
-      <div className="rounded-2xl bg-white p-4 shadow-sm">
+      <div className="px-6 py-6 sm:px-8">
         {isLoading ? <p>Cargando socios...</p> : null}
         {isError ? (
           <p className="text-sm text-red-700">
