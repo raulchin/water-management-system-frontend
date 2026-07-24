@@ -1,40 +1,55 @@
 import { billingApiClient } from "../../../config/apiClient";
+
 import type {
   CollectionSummary,
-  PendingInvoice,
+  PendingCollectionBill,
   CreateBatchCollectionInput,
-  CollectionResponse
+  CollectionResponse,
+  CreateCollectionByItemsInput,
+  CollectionByItemsResponse,
+
 } from "../types/collection.types";
 
-type LatestCollectionsResponse = {
+type PendingCollectionItemsResponse = {
   codResult: string;
   message: string;
-  data: CollectionSummary[];
+  data: PendingCollectionBill[];
 };
 
-export async function getLatestCollections(): Promise<CollectionSummary[]> {
-  const response =
-    await billingApiClient.get<LatestCollectionsResponse>("/cobros/latest");
+type CreateCollectionByItemsResponse = {
+  codResult: string;
+  message: string;
+  data: CollectionByItemsResponse[];
+};
+
+export async function createCollectionByItems(
+  data: CreateCollectionByItemsInput,
+): Promise<CollectionByItemsResponse[]> {
+  console.log("Payload registrar cobro por items:", JSON.stringify(data, null, 2));
+
+  const response = await billingApiClient.post<CreateCollectionByItemsResponse>(
+    "/cobros/items",
+    data,
+  );
+
+  console.log("Respuesta registrar cobro por items:", response.data);
 
   return response.data.data;
 }
 
-type PendingInvoicesResponse = {
-  codResult: string;
-  message: string;
-  data: PendingInvoice[];
-};
 
 export async function getPendingInvoicesByIdentification(
   identification: string,
-): Promise<PendingInvoice[]> {
-  const response = await billingApiClient.get<PendingInvoicesResponse>(
-    "/facturas/pending",
+): Promise<PendingCollectionBill[]> {
+  
+  const response = await billingApiClient.get<PendingCollectionItemsResponse>(
+    "/cobros/items-pendientes",
     {
       params: {
         identification,
       },
     },
+
   );
 
   return response.data.data;
@@ -59,6 +74,27 @@ export async function createBatchCollection(
     );
 
   console.log("Respuesta registrar cobro:", response.data);
+
+  return response.data.data;
+}
+
+
+type LatestCollectionsResponse = {
+  codResult: string;
+  message: string;
+  data: CollectionSummary[];
+};
+
+export async function getLatestCollections(): Promise<CollectionSummary[]> {
+  const response =
+    await billingApiClient.get<LatestCollectionsResponse>("/cobros/latest");
+
+  return response.data.data;
+}
+
+export async function getItemsCollections(): Promise<CollectionSummary[]> {
+  const response =
+    await billingApiClient.get<LatestCollectionsResponse>("/cobros/items");
 
   return response.data.data;
 }

@@ -8,3 +8,5 @@ export function useLatestCollections() {
     queryFn: getLatestCollections,
   });
 }
+
+

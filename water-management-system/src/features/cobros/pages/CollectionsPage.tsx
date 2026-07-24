@@ -1,11 +1,12 @@
 import { CircleDollarSign, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { CollectionsTable } from "../components/CollectionsTable";
-import { useLatestCollections } from "../hooks/useLatestCollections";
+
+import { useItemsCollections } from "../hooks/useItemsCollections";
 
 export function CollectionsPage() {
   const navigate = useNavigate();
-  const { data: collections = [], isLoading, isError } = useLatestCollections();
+  const { data: collections = [], isLoading, isError } = useItemsCollections();
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">

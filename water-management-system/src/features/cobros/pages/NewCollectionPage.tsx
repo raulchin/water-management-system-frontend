@@ -3,9 +3,13 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PendingInvoicesTable } from "../components/PendingInvoicesTable";
 import { usePendingInvoicesByIdentification } from "../hooks/usePendingInvoicesByIdentification";
-import type { PendingInvoice } from "../types/collection.types";
 
-import { useCreateBatchCollection } from "../hooks/useCreateBatchCollection";
+import type {
+  SelectablePendingItem,
+  PendingCollectionBill,
+} from "../types/collection.types";
+
+import { useCreateCollectionByItems } from "../hooks/useCreateCollectionByItems";
 
 const currencyFormatter = new Intl.NumberFormat("es-EC", {
   style: "currency",
@@ -17,30 +21,46 @@ export function NewCollectionPage() {
   const pendingInvoicesMutation = usePendingInvoicesByIdentification();
 
   const [identification, setIdentification] = useState("");
-  const [pendingInvoices, setPendingInvoices] = useState<PendingInvoice[]>([]);
-  const [selectedInvoices, setSelectedInvoices] = useState<PendingInvoice[]>(
+
+  const [selectedItems, setSelectedItems] = useState<SelectablePendingItem[]>(
     [],
   );
+
+  const [pendingBills, setPendingBills] = useState<PendingCollectionBill[]>([]);
+
   const [paymentMethod, setPaymentMethod] = useState("EFECTIVO");
   const [receivedAmountCents, setReceivedAmountCents] = useState(0);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const createBatchCollectionMutation = useCreateBatchCollection();
+  const createCollectionByItemsMutation = useCreateCollectionByItems();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [observation, setObservation] = useState("");
 
-  const selectedBillIds = selectedInvoices.map((invoice) => invoice.billId);
+  const getItemKey = (item: SelectablePendingItem) =>
+    `${item.billId}-${item.itemId}-${item.itemType}`;
+
+  const selectedItemKeys = selectedItems.map(getItemKey);
 
   const totalAmount = useMemo(() => {
-    return selectedInvoices.reduce(
-      (total, invoice) => total + invoice.pendingBalance,
-      0,
-    );
-  }, [selectedInvoices]);
+    return selectedItems.reduce((total, item) => total + item.pendingAmount, 0);
+  }, [selectedItems]);
 
   const receivedAmountValue = receivedAmountCents / 100;
   const changeAmount =
     receivedAmountValue > totalAmount ? receivedAmountValue - totalAmount : 0;
+
+  const buildCollectionItems = () => {
+    return selectedItems.map((item) => {
+      const requestItem = {
+        billId: item.billId,
+        itemType: item.itemType,
+        paymentAmount: item.pendingAmount,
+        ...(item.itemType === "MULTA" ? { billPenaltyId: item.itemId } : {}),
+      };
+
+      return requestItem;
+    });
+  };
 
   const handleSearch = async () => {
     const value = identification.trim();
@@ -52,28 +72,40 @@ export function NewCollectionPage() {
 
     try {
       setServerError(null);
-      setPendingInvoices([]);
-      setSelectedInvoices([]);
       setSuccessMessage(null);
+      setPendingBills([]);
+      setSelectedItems([]);
+      setReceivedAmountCents(0);
 
       const result = await pendingInvoicesMutation.mutateAsync(value);
 
-      setPendingInvoices(result);
+      setPendingBills(result);
 
       if (result.length === 0) {
         setServerError(
-          "No existen facturas pendientes para la identificación ingresada",
+          "No existen items pendientes para la identificación ingresada",
         );
       }
     } catch (error: any) {
-      setPendingInvoices([]);
-      setSelectedInvoices([]);
+      setPendingBills([]);
+      setSelectedItems([]);
       setServerError(
         error.response?.data?.errors?.[0]?.defaultMessage ??
           error.response?.data?.message ??
           "No se pudieron consultar las facturas pendientes",
       );
     }
+  };
+
+  const handleClear = () => {
+    setIdentification("");
+    setPendingBills([]);
+    setSelectedItems([]);
+    setPaymentMethod("EFECTIVO");
+    setReceivedAmountCents(0);
+    setServerError(null);
+    setSuccessMessage(null);
+    setObservation("");
   };
 
   const formatCurrencyInput = (cents: number) => {
@@ -89,23 +121,26 @@ export function NewCollectionPage() {
     setReceivedAmountCents(cents);
   };
 
-  const handleToggleInvoice = (invoice: PendingInvoice) => {
-    setSelectedInvoices((currentInvoices) => {
-      const exists = currentInvoices.some(
-        (item) => item.billId === invoice.billId,
+  const handleToggleItem = (item: SelectablePendingItem) => {
+    setSelectedItems((currentItems) => {
+      const itemKey = getItemKey(item);
+      const exists = currentItems.some(
+        (currentItem) => getItemKey(currentItem) === itemKey,
       );
 
       if (exists) {
-        return currentInvoices.filter((item) => item.billId !== invoice.billId);
+        return currentItems.filter(
+          (currentItem) => getItemKey(currentItem) !== itemKey,
+        );
       }
 
-      return [...currentInvoices, invoice];
+      return [...currentItems, item];
     });
   };
 
   const handleConfirmCollection = async () => {
-    if (selectedInvoices.length === 0) {
-      setServerError("Debe seleccionar al menos una factura");
+    if (selectedItems.length === 0) {
+      setServerError("Debe seleccionar al menos un item pendiente");
       return;
     }
 
@@ -120,21 +155,18 @@ export function NewCollectionPage() {
       paymentMethod,
       paymentDate: today,
       observation: observation || undefined,
-      items: selectedInvoices.map((invoice) => ({
-        billId: invoice.billId,
-        paymentAmount: invoice.pendingBalance,
-      })),
+      items: buildCollectionItems(),
     };
 
     try {
       setServerError(null);
       setSuccessMessage(null);
 
-      await createBatchCollectionMutation.mutateAsync(payload);
+      await createCollectionByItemsMutation.mutateAsync(payload);
 
       setSuccessMessage("Cobro registrado correctamente.");
-      setPendingInvoices([]);
-      setSelectedInvoices([]);
+
+      setSelectedItems([]);
       setReceivedAmountCents(0);
       setObservation("");
     } catch (error: any) {
@@ -144,17 +176,6 @@ export function NewCollectionPage() {
           "No se pudo registrar el cobro",
       );
     }
-  };
-
-  const handleClear = () => {
-    setIdentification("");
-    setPendingInvoices([]);
-    setSelectedInvoices([]);
-    setPaymentMethod("EFECTIVO");
-    setReceivedAmountCents(0);
-    setServerError(null);
-    setSuccessMessage(null);
-    setObservation("");
   };
 
   return (
@@ -227,11 +248,11 @@ export function NewCollectionPage() {
           </div>
         </div>
 
-        {pendingInvoices.length > 0 ? (
+        {pendingBills.length > 0 ? (
           <PendingInvoicesTable
-            invoices={pendingInvoices}
-            selectedBillIds={selectedBillIds}
-            onToggleInvoice={handleToggleInvoice}
+            bills={pendingBills}
+            selectedItemKeys={selectedItemKeys}
+            onToggleItem={handleToggleItem}
           />
         ) : null}
 
@@ -322,12 +343,12 @@ export function NewCollectionPage() {
             type="button"
             onClick={handleConfirmCollection}
             disabled={
-              selectedInvoices.length === 0 ||
-              createBatchCollectionMutation.isPending
+              selectedItems.length === 0 ||
+              createCollectionByItemsMutation.isPending
             }
             className="inline-flex h-13 items-center justify-center rounded-lg bg-[#5b35d5] px-8 py-4 text-base font-bold text-white shadow-sm transition hover:bg-[#4b2cb1] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {createBatchCollectionMutation.isPending
+            {createCollectionByItemsMutation.isPending
               ? "Registrando cobro..."
               : "Confirmar cobro"}
           </button>
