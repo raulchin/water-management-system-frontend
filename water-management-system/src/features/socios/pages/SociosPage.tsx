@@ -23,12 +23,6 @@ export function SociosPage() {
     navigate(`/socios/${socio.idPartner}/editar`);
   };
 
-  const handleDelete = (socio: Socio) => {
-    setDeleteError(null);
-    console.log("Eliminar socio:", socio);
-    setSocioToDelete(socio);
-  };
-
   const handleCancelDelete = () => {
     setSocioToDelete(null);
   };
@@ -91,7 +85,6 @@ export function SociosPage() {
           <SociosTable
             socios={data}
             onEdit={handleEdit}
-            onDelete={handleDelete}
           />
         ) : null}
       </div>

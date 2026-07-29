@@ -33,8 +33,13 @@ export function NewCollectionPage() {
   const [serverError, setServerError] = useState<string | null>(null);
 
   const createCollectionByItemsMutation = useCreateCollectionByItems();
+
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [observation, setObservation] = useState("");
+
+  const [emptyPendingMessage, setEmptyPendingMessage] = useState<string | null>(
+    null,
+  );
 
   const getItemKey = (item: SelectablePendingItem) =>
     `${item.billId}-${item.itemId}-${item.itemType}`;
@@ -73,6 +78,7 @@ export function NewCollectionPage() {
     try {
       setServerError(null);
       setSuccessMessage(null);
+      setEmptyPendingMessage(null);
       setPendingBills([]);
       setSelectedItems([]);
       setReceivedAmountCents(0);
@@ -82,8 +88,8 @@ export function NewCollectionPage() {
       setPendingBills(result);
 
       if (result.length === 0) {
-        setServerError(
-          "No existen items pendientes para la identificación ingresada",
+        setEmptyPendingMessage(
+          "No existen valores pendientes para la identificación ingresada.",
         );
       }
     } catch (error: any) {
@@ -105,6 +111,7 @@ export function NewCollectionPage() {
     setReceivedAmountCents(0);
     setServerError(null);
     setSuccessMessage(null);
+    setEmptyPendingMessage(null);
     setObservation("");
   };
 
@@ -161,14 +168,30 @@ export function NewCollectionPage() {
     try {
       setServerError(null);
       setSuccessMessage(null);
+      setEmptyPendingMessage(null);
 
       await createCollectionByItemsMutation.mutateAsync(payload);
 
-      setSuccessMessage("Cobro registrado correctamente.");
+      const refreshedPendingBills = await pendingInvoicesMutation.mutateAsync(
+        identification.trim(),
+      );
 
+      setPendingBills(refreshedPendingBills);
       setSelectedItems([]);
       setReceivedAmountCents(0);
       setObservation("");
+
+      if (refreshedPendingBills.length > 0) {
+        setEmptyPendingMessage(null);
+        setSuccessMessage(
+          "Cobro registrado correctamente. Se actualizaron los pendientes del socio.",
+        );
+      } else {
+        setEmptyPendingMessage("El socio no tiene valores pendientes.");
+        setSuccessMessage(
+          "Cobro registrado correctamente. El socio no tiene valores pendientes.",
+        );
+      }
     } catch (error: any) {
       setServerError(
         error.response?.data?.errors?.[0]?.defaultMessage ??
@@ -200,18 +223,6 @@ export function NewCollectionPage() {
       </div>
 
       <div className="space-y-6 px-6 py-6 sm:px-8">
-        {serverError ? (
-          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
-            {serverError}
-          </p>
-        ) : null}
-
-        {successMessage ? (
-          <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
-            {successMessage}
-          </p>
-        ) : null}
-
         <div className="grid gap-4 lg:grid-cols-[320px_140px]">
           <div>
             <label className="mb-2 block text-sm font-bold text-[#303659]">
@@ -256,6 +267,8 @@ export function NewCollectionPage() {
           />
         ) : null}
 
+        
+
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
           <div className="ml-auto max-w-md space-y-3">
             <div className="flex items-center justify-between text-sm">
@@ -280,6 +293,12 @@ export function NewCollectionPage() {
             </div>
           </div>
         </div>
+
+        {emptyPendingMessage ? (
+          <p className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600">
+            {emptyPendingMessage}
+          </p>
+        ) : null}
 
         <div className="grid gap-4 lg:grid-cols-3">
           <div>
@@ -337,6 +356,18 @@ export function NewCollectionPage() {
             />
           </div>
         </div>
+
+        {serverError ? (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            {serverError}
+          </p>
+        ) : null}
+
+        {successMessage ? (
+          <p className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">
+            {successMessage}
+          </p>
+        ) : null}
 
         <div className="flex flex-wrap gap-6 border-t border-slate-200 pt-6">
           <button

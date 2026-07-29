@@ -13,7 +13,10 @@ import type {
   ReadingMeterAssignment,
 } from "../../medidores/types/asignacionMedidor.types";
 
+import type { PreviousMeterReading } from "../types/meterReading.types";
+
 type Props = {
+  
   onSubmit: (data: MeterReadingFormData) => void;
   onCancel: () => void;
   serverError?: string | null;
@@ -22,11 +25,17 @@ type Props = {
   onClearMessages?: () => void;
   onClearSelection?: () => void;
   isSearchingPartner?: boolean;
+  isSearchingPreviousReading?: boolean;
   assignmentPartner?: ReadingAssignmentPartner | null;
   partnerAssignments?: ReadingMeterAssignment[];
   selectedAssignment?: ReadingMeterAssignment | null;
   onSearchPartner?: (identification: string) => void;
   onSelectAssignment?: (assignment: ReadingMeterAssignment) => void;
+  onSearchPreviousReading?: (
+    meterId: number,
+    period: string,
+  ) => Promise<PreviousMeterReading>;
+
 };
 
 const defaultValues: MeterReadingFormData = {
@@ -53,19 +62,23 @@ const readOnlyClass =
   "h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm";
 
 export function MeterReadingForm({
+  
   onSubmit,
   onCancel,
   serverError,
   successMessage,
   isSaving,
   isSearchingPartner,
+  isSearchingPreviousReading,
   assignmentPartner,
   partnerAssignments = [],
   selectedAssignment,
   onSearchPartner,
   onSelectAssignment,
+  onSearchPreviousReading,
   onClearMessages,
   onClearSelection,
+  
 }: Props) {
   const {
     register,
@@ -87,6 +100,7 @@ export function MeterReadingForm({
 
   const handleClear = () => {
     reset(defaultValues);
+    setPreviousReadingMessage(null);
     onClearMessages?.();
     onClearSelection?.();
   };
@@ -127,6 +141,71 @@ export function MeterReadingForm({
   };
 
   const partnerIdentificationRegister = register("partnerIdentification");
+
+  const period = watch("period");
+  const [previousReadingMessage, setPreviousReadingMessage] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    if (!selectedAssignment || !period || !onSearchPreviousReading) {
+      setPreviousReadingMessage(null);
+      setValue("previousReading", 0, {
+        shouldValidate: true,
+      });
+      return;
+    }
+
+    let isActive = true;
+
+    const loadPreviousReading = async () => {
+      try {
+        setPreviousReadingMessage("Consultando lectura anterior...");
+
+        const result = await onSearchPreviousReading(
+          selectedAssignment.medidorId,
+          period,
+        );
+
+        if (!isActive) {
+          return;
+        }
+
+        setValue("previousReading", result.previousReading, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+
+        if (result.hasPreviousReading) {
+          setPreviousReadingMessage(
+            `Lectura anterior del periodo ${result.previousPeriod}: ${result.previousReading}`,
+          );
+        } else {
+          setPreviousReadingMessage(
+            "No existe lectura anterior para este medidor. Se usará 0.",
+          );
+        }
+      } catch {
+        if (!isActive) {
+          return;
+        }
+
+        setValue("previousReading", 0, {
+          shouldValidate: true,
+        });
+
+        setPreviousReadingMessage(
+          "No se pudo consultar la lectura anterior. Revise el medidor y periodo.",
+        );
+      }
+    };
+
+    loadPreviousReading();
+
+    return () => {
+      isActive = false;
+    };
+  }, [selectedAssignment, period, onSearchPreviousReading, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-7">
@@ -369,11 +448,18 @@ export function MeterReadingForm({
                   id="previousReading"
                   type="number"
                   step="0.01"
-                  className={inputClass}
+                  readOnly
+                  className={readOnlyClass}
                   {...register("previousReading", { valueAsNumber: true })}
                 />
                 {errors.previousReading ? (
                   <p className={errorClass}>{errors.previousReading.message}</p>
+                ) : previousReadingMessage ? (
+                  <p className="mt-1 text-xs font-semibold text-[#5b35d5]">
+                    {isSearchingPreviousReading
+                      ? "Consultando lectura anterior..."
+                      : previousReadingMessage}
+                  </p>
                 ) : null}
               </div>
 

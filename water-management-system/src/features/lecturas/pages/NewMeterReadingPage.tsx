@@ -1,5 +1,5 @@
 import { ClipboardList } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { MeterReadingForm } from "../components/MeterReadingForm";
 import { useCreateMeterReading } from "../hooks/useCreateMeterReading";
@@ -7,13 +7,12 @@ import type { MeterReadingFormData } from "../schemas/meterReadingSchema";
 
 import { useSearchAssignmentsByPartnerIdentification } from "../../medidores/hooks/useSearchAssignmentsByPartnerIdentification";
 
+import { usePreviousMeterReading } from "../hooks/usePreviousMeterReading";
+
 import type {
   ReadingAssignmentPartner,
   ReadingMeterAssignment,
 } from "../../medidores/types/asignacionMedidor.types";
-
-
-
 
 export function NewMeterReadingPage() {
   const navigate = useNavigate();
@@ -21,7 +20,15 @@ export function NewMeterReadingPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const searchAssignmentsMutation = useSearchAssignmentsByPartnerIdentification();
+  const {
+  mutateAsync: searchPreviousReading,
+  isPending: isSearchingPreviousReading,
+} = usePreviousMeterReading();
+
+
+
+  const searchAssignmentsMutation =
+    useSearchAssignmentsByPartnerIdentification();
 
   const getBackendMessage = (error: any, fallback: string) =>
     error.response?.data?.errors?.[0]?.defaultMessage ??
@@ -60,8 +67,6 @@ export function NewMeterReadingPage() {
     }
   };
 
-  
-
   const handleSearchPartner = async (identification: string) => {
     try {
       setServerError(null);
@@ -94,7 +99,6 @@ export function NewMeterReadingPage() {
     }
   };
 
-
   const [assignmentPartner, setAssignmentPartner] =
     useState<ReadingAssignmentPartner | null>(null);
   const [partnerAssignments, setPartnerAssignments] = useState<
@@ -102,6 +106,29 @@ export function NewMeterReadingPage() {
   >([]);
   const [selectedAssignment, setSelectedAssignment] =
     useState<ReadingMeterAssignment | null>(null);
+
+  const handleSearchPreviousReading = useCallback(
+    async (meterId: number, period: string) => {
+      try {
+        setServerError(null);
+        setSuccessMessage(null);
+
+        return await searchPreviousReading({
+          meterId,
+          period,
+        });
+      } catch (error: any) {
+        setServerError(
+          error.response?.data?.errors?.[0]?.defaultMessage ??
+            error.response?.data?.message ??
+            "No se pudo consultar la lectura anterior del medidor",
+        );
+
+        throw error;
+      }
+    },
+    [searchPreviousReading],
+  );
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -125,10 +152,12 @@ export function NewMeterReadingPage() {
           successMessage={successMessage}
           isSaving={isPending}
           isSearchingPartner={searchAssignmentsMutation.isPending}
+          isSearchingPreviousReading={isSearchingPreviousReading}
           assignmentPartner={assignmentPartner}
           partnerAssignments={partnerAssignments}
           selectedAssignment={selectedAssignment}
           onSearchPartner={handleSearchPartner}
+          onSearchPreviousReading={handleSearchPreviousReading}
           onSelectAssignment={setSelectedAssignment}
           onClearMessages={() => {
             setServerError(null);

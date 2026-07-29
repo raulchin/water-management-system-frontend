@@ -1,9 +1,16 @@
-import { useQuery } from '@tanstack/react-query'
-import { getMeterReadings } from '../api/meterReadingsApi'
+import { useQuery } from '@tanstack/react-query';
+import { getMeterReadings } from '../api/meterReadingsApi';
 
-export function useMeterReadings() {
+type UseMeterReadingsParams = {
+  page: number;
+  size: number;
+};
+
+
+export function useMeterReadings( { page, size}:  UseMeterReadingsParams ) {
   return useQuery({
-    queryKey: ['meter-readings'],
-    queryFn: getMeterReadings,
+    queryKey: ['meter-readings', page, size],
+    queryFn: () => getMeterReadings(page, size),
+    placeholderData: (previousData) => previousData,
   })
 }

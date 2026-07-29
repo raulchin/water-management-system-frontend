@@ -23,7 +23,6 @@ import {
 type Props = {
   socios: Socio[];
   onEdit: (socio: Socio) => void;
-  onDelete: (socio: Socio) => void;
 };
 
 function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
@@ -38,7 +37,7 @@ function SortIcon({ sorted }: { sorted: false | "asc" | "desc" }) {
   return <ChevronsUpDown size={15} className="text-slate-400" />;
 }
 
-export function SociosTable({ socios, onEdit, onDelete }: Props) {
+export function SociosTable({ socios, onEdit }: Props) {
   const [globalFilter, setGlobalFilter] = useState("");
 
   const columns: ColumnDef<Socio>[] = [
@@ -96,14 +95,6 @@ export function SociosTable({ socios, onEdit, onDelete }: Props) {
             <Pencil size={17} />
           </button>
 
-          <button
-            type="button"
-            onClick={() => onDelete(row.original)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-700 transition hover:bg-red-100"
-            aria-label="Eliminar socio"
-          >
-            <Trash2 size={17} />
-          </button>
         </div>
       ),
     },

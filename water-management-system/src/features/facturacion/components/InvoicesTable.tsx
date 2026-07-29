@@ -1,4 +1,3 @@
-
 import type { InvoiceSummary } from "../types/invoice.types";
 
 type Props = {
@@ -38,6 +37,7 @@ export function InvoicesTable({ invoices }: Props) {
           <thead className="bg-slate-50 text-[#303659]">
             <tr>
               <th className="px-4 py-3">Identificación</th>
+              <th className="px-4 py-3">Medidor</th>
               <th className="px-4 py-3">Periodo</th>
               <th className="px-4 py-3">Tarifa base</th>
               <th className="px-4 py-3">Consumo</th>
@@ -57,14 +57,18 @@ export function InvoicesTable({ invoices }: Props) {
                   {invoice.partnerIdentification}
                 </td>
 
+                <td className="px-4 py-3 font-semibold text-slate-900">
+                  {invoice.meterNumber}
+                </td>
+
                 <td className="px-4 py-3">{invoice.period}</td>
 
                 <td className="px-4 py-3">
                   {currencyFormatter.format(invoice.baseFee)}
                 </td>
 
-                <td className="px-4 py-3">
-                  {currencyFormatter.format(invoice.consumptionAmount)}
+                <td className="px-4 py-3 font-semibold text-[#201a57]">
+                  {Number(invoice.calculatedConsumption ?? 0).toFixed(2)} m³
                 </td>
 
                 <td className="px-4 py-3 font-bold text-[#201a57]">
