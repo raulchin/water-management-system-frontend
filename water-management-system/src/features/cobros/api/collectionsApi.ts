@@ -22,6 +22,11 @@ type CreateCollectionByItemsResponse = {
   data: CollectionByItemsResponse[];
 };
 
+/**
+ * Metodo que  permite realizar el cobro de los diferentes items seleccionados.
+ * @param data 
+ * @returns 
+ */
 export async function createCollectionByItems(
   data: CreateCollectionByItemsInput,
 ): Promise<CollectionByItemsResponse[]> {

@@ -4,9 +4,29 @@ import { CollectionsTable } from "../components/CollectionsTable";
 
 import { useItemsCollections } from "../hooks/useItemsCollections";
 
+import { useState } from "react";
+import { CollectionDetailDialog } from "../components/CollectionDetailDialog";
+import type { CollectionSummary } from "../types/collection.types";
+
 export function CollectionsPage() {
   const navigate = useNavigate();
   const { data: collections = [], isLoading, isError } = useItemsCollections();
+  const [selectedCollection, setSelectedCollection] =
+    useState<CollectionSummary | null>(null);
+
+  /**
+   * Opens the detail dialog for the selected collection.
+   *
+   * @param collection - Collection whose information will be displayed.
+   * @returns Nothing.
+   */
+  const handleViewDetails = (collection: CollectionSummary) => {
+    setSelectedCollection(collection);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedCollection(null);
+  };
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -60,9 +80,17 @@ export function CollectionsPage() {
         ) : null}
 
         {!isLoading && !isError && collections.length > 0 ? (
-          <CollectionsTable collections={collections} />
+          <CollectionsTable
+            collections={collections}
+            onViewDetails={handleViewDetails}
+          />
         ) : null}
       </div>
+
+      <CollectionDetailDialog
+        collection={selectedCollection}
+        onClose={handleCloseDetails}
+      />
     </section>
   );
 }

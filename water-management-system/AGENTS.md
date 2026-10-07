@@ -556,3 +556,36 @@ Se creó el servicio meter.service.ts para centralizar las llamadas HTTP de medi
 También se agregó el hook useMeters usando TanStack Query.
 Para validar, ejecuta npm run dev y revisa la pantalla de medidores.
 ```
+---
+
+## 22 TypeScript JSDoc rules
+
+Whenever creating or modifying a TypeScript method or function:
+
+1. Add a JSDoc block immediately above it.
+2. Include a clear description of its purpose.
+3. Add `@param` for every parameter.
+4. Add `@returns` if the method returns a value.
+5. Add `@throws` if the method can throw an exception.
+6. Do not document obvious implementation details.
+7. Keep the JSDoc synchronized with the actual method signature and behavior.
+8. Never create a new method without JSDoc documentation.
+9. All JSDoc descriptive text MUST be written in Spanish.
+10. Descriptions for `@param`, `@returns`, and `@throws` MUST be written in Spanish.
+11. Use concise, technical, and professional Spanish.
+12. Do not translate code identifiers such as method names, parameter names, class names, interfaces, or types.
+13. Avoid generic descriptions such as "Método que hace algo". Explain the actual responsibility of the method.
+
+Example:
+
+```typescript
+/**
+ * Obtiene la información de un usuario mediante su identificador.
+ *
+ * @param userId Identificador único del usuario.
+ * @returns Información del usuario encontrado.
+ * @throws Error si no es posible obtener la información del usuario.
+ */
+async function getUserById(userId: number): Promise<User> {
+    return userService.findById(userId);
+}

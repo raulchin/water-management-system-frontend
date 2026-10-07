@@ -33,7 +33,7 @@ export function MeterAssignmentsPage() {
 
           <button
             type="button"
-            onClick={() => navigate("/facturacion/nueva")}
+            onClick={() => navigate("/asignaciones/asignacion")}
             className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#5b35d5] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#4b2cb1]"
           >
             <Plus size={18} />
