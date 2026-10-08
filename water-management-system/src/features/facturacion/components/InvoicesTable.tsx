@@ -2,6 +2,7 @@ import type { InvoiceSummary } from "../types/invoice.types";
 
 type Props = {
   invoices: InvoiceSummary[];
+  onViewDetails: (invoice: InvoiceSummary) => void;
 };
 
 const currencyFormatter = new Intl.NumberFormat("es-EC", {
@@ -29,7 +30,7 @@ function getStatusClass(status: string) {
   return "bg-[#5b35d5]";
 }
 
-export function InvoicesTable({ invoices }: Props) {
+export function InvoicesTable({ invoices, onViewDetails }: Props) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="overflow-x-auto">
@@ -37,13 +38,14 @@ export function InvoicesTable({ invoices }: Props) {
           <thead className="bg-slate-50 text-[#303659]">
             <tr>
               <th className="px-4 py-3">Identificación</th>
-              <th className="px-4 py-3">Medidor</th>
+              <th className="px-4 py-3">Factura</th>
               <th className="px-4 py-3">Periodo</th>
               <th className="px-4 py-3">Tarifa base</th>
               <th className="px-4 py-3">Consumo</th>
               <th className="px-4 py-3">Total</th>
               <th className="px-4 py-3">Vencimiento</th>
               <th className="px-4 py-3 text-center">Estado</th>
+              <th className="px-4 py-3 text-center">Acciones</th>
             </tr>
           </thead>
 
@@ -51,14 +53,16 @@ export function InvoicesTable({ invoices }: Props) {
             {invoices.map((invoice) => (
               <tr
                 key={invoice.billId}
-                className="border-t border-slate-100 transition hover:bg-slate-50"
+                className="border-t border-slate-100 transition hover:bg-[#f7f3ff]"
               >
                 <td className="px-4 py-3 font-semibold text-slate-900">
                   {invoice.partnerIdentification}
                 </td>
-
-                <td className="px-4 py-3 font-semibold text-slate-900">
-                  {invoice.meterNumber}
+                <td
+                  onClick={() => onViewDetails(invoice)}
+                  className="cursor-pointer font-semibold border-t border-slate-100 transition hover:bg-[#fbf8ff]"
+                >
+                  {invoice.billType}
                 </td>
 
                 <td className="px-4 py-3">{invoice.period}</td>
@@ -85,6 +89,19 @@ export function InvoicesTable({ invoices }: Props) {
                   >
                     {invoice.status}
                   </span>
+                </td>
+
+                <td className="px-4 py-3 text-center">
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onViewDetails(invoice);
+                    }}
+                    className="rounded-lg border border-[#5b35d5] bg-white px-3 py-1 text-xs font-bold text-[#5b35d5] transition hover:bg-[#efe9ff]"
+                  >
+                    Ver detalle
+                  </button>
                 </td>
               </tr>
             ))}

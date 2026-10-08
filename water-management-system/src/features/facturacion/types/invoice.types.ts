@@ -71,6 +71,7 @@ export type InvoiceReadingSearchResult = {
 
 export type InvoiceSummary = {
   billId: number;
+  billType: string;
   readingId: number;
   meterId: number;
   assignmentId: number;

@@ -1,12 +1,35 @@
-
 import { Plus, ReceiptText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
 import { InvoicesTable } from "../components/InvoicesTable";
 import { useLatestInvoices } from "../hooks/useLatestInvoices";
+import { InvoiceDetailDialog } from "../components/InvoiceDetailDialog";
+import type { InvoiceSummary } from "../types/invoice.types";
 
 export function InvoicesPage() {
   const navigate = useNavigate();
   const { data: invoices = [], isLoading, isError } = useLatestInvoices();
+
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceSummary | null>(
+    null,
+  );
+
+  /**
+   * Abre el diálogo con la información de la factura seleccionada.
+   *
+   * @param invoice Factura que se mostrará en el diálogo.
+   */
+  const handleViewDetails = (invoice: InvoiceSummary): void => {
+    setSelectedInvoice(invoice);
+  };
+
+  /**
+   * Cierra el diálogo de detalle de factura.
+   */
+  const handleCloseDetails = (): void => {
+    setSelectedInvoice(null);
+  };
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -60,9 +83,17 @@ export function InvoicesPage() {
         ) : null}
 
         {!isLoading && !isError && invoices.length > 0 ? (
-          <InvoicesTable invoices={invoices} />
+          <InvoicesTable
+            invoices={invoices}
+            onViewDetails={handleViewDetails}
+          />
         ) : null}
       </div>
+
+      <InvoiceDetailDialog
+        invoice={selectedInvoice}
+        onClose={handleCloseDetails}
+      />
     </section>
   );
 }

@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Brush, Calendar, Search, Gauge, Save, X } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type DefaultValues } from "react-hook-form";
 import {
   meterReadingSchema,
   type MeterReadingFormData,
@@ -16,7 +16,6 @@ import type {
 import type { PreviousMeterReading } from "../types/meterReading.types";
 
 type Props = {
-  
   onSubmit: (data: MeterReadingFormData) => void;
   onCancel: () => void;
   serverError?: string | null;
@@ -35,10 +34,9 @@ type Props = {
     meterId: number,
     period: string,
   ) => Promise<PreviousMeterReading>;
-
 };
 
-const defaultValues: MeterReadingFormData = {
+const defaultValues: DefaultValues<MeterReadingFormData> = {
   meterId: 0,
   assignmentId: 0,
   partnerIdentification: "",
@@ -46,7 +44,6 @@ const defaultValues: MeterReadingFormData = {
   period: "",
   readingDate: "",
   previousReading: 0,
-  currentReading: 0,
   status: "REGISTRADA",
   observation: "",
   meterNumber: "",
@@ -62,7 +59,6 @@ const readOnlyClass =
   "h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 text-sm text-slate-700 shadow-sm";
 
 export function MeterReadingForm({
-  
   onSubmit,
   onCancel,
   serverError,
@@ -78,18 +74,21 @@ export function MeterReadingForm({
   onSearchPreviousReading,
   onClearMessages,
   onClearSelection,
-  
 }: Props) {
   const {
     register,
     handleSubmit,
     reset,
+    resetField,
     watch,
     setValue,
     formState: { errors },
   } = useForm<MeterReadingFormData>({
     resolver: zodResolver(meterReadingSchema),
     defaultValues,
+    mode: "onBlur",
+    reValidateMode: "onChange",
+    shouldFocusError: true,
   });
 
   const previousReading = watch("previousReading");
@@ -98,8 +97,13 @@ export function MeterReadingForm({
   const consumption =
     Number(currentReading || 0) - Number(previousReading || 0);
 
+  /**
+   * Restablece los campos, mensajes y selecciones del formulario.
+   */
   const handleClear = () => {
+    resetField("currentReading");
     reset(defaultValues);
+    setPreviousReadingMessage(null);
     setPreviousReadingMessage(null);
     onClearMessages?.();
     onClearSelection?.();
@@ -471,12 +475,32 @@ export function MeterReadingForm({
                   id="currentReading"
                   type="number"
                   step="0.01"
-                  className={inputClass}
-                  {...register("currentReading", { valueAsNumber: true })}
+                  min="0.01"
+                  required
+                  aria-invalid={Boolean(errors.currentReading)}
+                  aria-describedby={
+                    errors.currentReading ? "currentReading-error" : undefined
+                  }
+                  className={`${inputClass} ${
+                    errors.currentReading
+                      ? "border-red-500 bg-red-50 text-red-900 focus:border-red-500 focus:ring-red-200"
+                      : ""
+                  }`}
+                  {...register("currentReading", {
+                    valueAsNumber: true,
+                  })}
                 />
+
                 {errors.currentReading ? (
-                  <p className={errorClass}>{errors.currentReading.message}</p>
+                  <p
+                    id="currentReading-error"
+                    role="alert"
+                    className={errorClass}
+                  >
+                    {errors.currentReading.message}
+                  </p>
                 ) : null}
+              
               </div>
             </div>
           </div>

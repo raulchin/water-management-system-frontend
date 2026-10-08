@@ -1,19 +1,23 @@
 import { billingApiClient, readingsApiClient } from "../../../config/apiClient";
-import type { CreateInvoiceInput, InvoiceReading, InvoiceResponse, InvoiceSummary } from "../types/invoice.types";
+import type {
+  CreateInvoiceInput,
+  InvoiceReading,
+  InvoiceResponse,
+  InvoiceSummary,
+} from "../types/invoice.types";
 import type { InvoiceReadingSearchResult } from "../types/invoice.types";
 
-
 type SearchReadingsResponse = {
-  codResult: string
-  message: string
-  data: InvoiceReading[]
-}
+  codResult: string;
+  message: string;
+  data: InvoiceReading[];
+};
 
 type CreateInvoiceResponse = {
-  codResult: string
-  message: string
-  data: InvoiceResponse
-}
+  codResult: string;
+  message: string;
+  data: InvoiceResponse;
+};
 
 type SearchReadingByPeriodAndMeterResponse = {
   codResult: string;
@@ -37,8 +41,13 @@ export async function searchReadingsByPartnerIdentification(
   return response.data.data;
 }
 
-export async function createInvoice(data: CreateInvoiceInput): Promise<InvoiceResponse> {
-  const response = await billingApiClient.post<CreateInvoiceResponse>("/facturas", data);
+export async function createInvoice(
+  data: CreateInvoiceInput,
+): Promise<InvoiceResponse> {
+  const response = await billingApiClient.post<CreateInvoiceResponse>(
+    "/facturas",
+    data,
+  );
   return response.data.data;
 }
 
@@ -63,6 +72,8 @@ export async function searchReadingsByPeriodAndMeterNumber(
 export async function getLatestInvoices(): Promise<InvoiceSummary[]> {
   const response =
     await billingApiClient.get<LatestInvoicesResponse>("/facturas/latest");
+
+  //console.log("Facturas:", response.data.data);
 
   return response.data.data;
 }
